@@ -1,0 +1,37 @@
+#!/usr/bin/env ruby
+
+begin
+  require 'sshworker'
+rescue LoadError
+  require 'rubygems'
+  require 'sshworker'
+end
+
+require 'optparse'
+
+#clean exit with CTRL+C
+trap("INT") { exit }
+
+options = {}
+
+parser = OptionParser.new do |opts|
+  opts.banner = "\n Run commands over SSH\n\n"
+  opts.on('-s', '--server SERVERNAME', "The hostname of the server") do |s|
+    options[:server] = s
+  end
+  opts.on('-c', '--command COMMAND', "Run the remote command") do |c|
+    options[:command] = c
+  end
+  opts.on('-h', '--help', "Displays help\n") do
+    puts opts
+    exit
+  end
+end
+parser.parse!
+
+if options[:server].nil? or options[:command].nil?
+    raise OptionParser::MissingArgument
+else
+  sshworker = Sshworker::Worker.new(options[:server], options[:command])
+  sshworker.run
+end
